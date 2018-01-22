@@ -1,0 +1,314 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[left=1.00in, right=1.00in, top=1.00in, bottom=1.00in]{geometry}
+\author{Joseph  Chen}
+\title{Summary for the final exam}
+\date{\today}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setCJKmainfont{SimSun}
+\usepackage{bm}
+
+\begin{document}
+	\maketitle
+	
+\section{traditional PR}
+\subsection{模式}
+\begin{itemize}
+	\item 定义: 广义地说，存在于时间和空间中可观察的物体，如果我们可以区别它们是否相同或是否相似，都可以称之为模式。模式所指的不是事物本身，而是从事物获得的信息，因此，模式往往表现为具有时间和空间分布的信息。
+	\item 直观特性: 可观察性、可区分性、相似性
+	\item 模式识别的分类：监督学习、概念驱动或归纳假说；非监督学习、数据驱动或演绎假说。
+	\item  模式分类的主要方法：数据聚类、统计分类、结构模式识别、神经网络	
+\end{itemize}
+\subsection{数学预备}
+\begin{itemize}
+	\item 贝叶斯公式  $\text{posterior} \propto \text{likelihood}\times  \text{prior} $ 
+	\item 如何从联合分布(joint distribution)导出边缘分布(marginal distribution)?  \textbf{A: } 对某个随机变量积分或者求和,e.g. 
+	$p(a,b) = \sum_{c}p(a,b,c)$
+	\item 多维高斯分布的概率密度
+	\[
+		N(\bm{x}|\bm{\mu}, \bm{\Sigma}) = \frac{1}{(2\pi)^{D/2} }\frac{1}{ |\bm{\Sigma}|^{1/2}} \exp\left\{
+			-\frac{1}{2} (\bm{x} - \bm{\mu})^T \bm{\Sigma}^{-1} (\bm{x} - \bm{\Sigma})
+			\right\}
+	\]
+	\item 指数函数分布族(exponential family), 包含高斯,二项分布etc. 共轭先验:给定一个likelihood,  我们可以找到一个具有相同函数形式的prior, 从而posterior 也具有相同的函数形式.
+	\item 拉格朗日乘数法, 用在(凸)优化问题求解, 原问题转换成对偶形式.
+	\item 数学期望和方差 
+	\[
+		 \begin{split} 
+			E(x) &= \sum_{x} p(x)x \text{ or } E(x) = \int p(x)x \mathrm{d}x \\
+			var(x) &= E( [x - E(x)]^2 ) = E(x^2) - [E(x)]^2 \\
+			cov(x, y ) &= E_{x,y}( (x-E(x))(y-E(y))  ) \\
+			&= E_{x,y}(xy) - E(x)E(y) \\
+			cov(\bm{x},\bm{y}) &= E_{\bm{x},\bm{y}}
+			[
+			 (\bm{x} - E(\bm{x})) (\bm{y}^T - E(\bm{y}^T))
+			] \\
+			&= E_{\bm{x},\bm{y}}[\bm{x}\bm{y}^T ] - E[\bm{x}]E[\bm{y}^T]
+		\end{split} 
+	\]
+\end{itemize}
+\subsection{判别函数}
+线性分类的3种情况:
+	\begin{itemize}
+		\item 多类情况1: $M$类需要$M$个判别函数,分界面区分$C_i$ or $\text{not} C_i$. e.g.  $d_i(x) > 0$其他小于0则$x$属于第$i$类;  
+		\item 多类情况2: $M$类需要$M(M-1)/2$, 分界面区分开$C_i$ 和$C_j$, 若$\forall d_{ij}(x) > 0, j\neq i$, 则$x$属于类别$i$. 
+		\item 多类情况3: $M$类需要$M$个判别函数, 取最大的判别函数的下标作为类别
+	\end{itemize}
+三种学习参数的方法: 最小二乘法(LMS), Fisher准则, 感知机 
+\begin{itemize}
+	\item LMS: $l_2$ norm loss, 梯度下降或者解析解
+	\item Fisher准则(有计算):思想就是将原数据从$D$维投影到$1$维, 然后找到一个线性分界面, 投影方程
+	\[
+		y = \bm{w}^T \bm{x} 
+	\] 
+	以二分类为例, 求出均值向量
+	\[
+		\bm{m}_1 = \frac{1}{N}\sum_{n\in \mathcal{C}_1} \bm{x}_n,
+		\bm{m}_2 = \frac{1}{N}\sum_{n\in \mathcal{C}_2} \bm{x}_n
+	\]
+	最大化Fisher 准则
+	\[
+	 	J(\bm{w}) = \frac{\bm{w}^T\bm{S}_b\bm{w}}{\bm{w}^T\bm{S}_w\bm{w}}
+	\]
+	得到
+	\[
+		\bm{w} \propto \bm{S}_w^{-1} (\bm{m_2} - \bm{m_1})
+	\]
+	然后分界面就是
+	\[
+		\bm{w}^T\bm{x} - y_0 = 0
+	\]
+	这里$y_0$取值
+	\[
+		y_0 = \frac{1}{2}(\bm{w}^T\bm{m}_1 + \bm{w}^T\bm{m}_2	)
+	\]
+	类间协方差矩阵 
+	\[
+		S_b= (\bm{m}_2 - \bm{m}_1)(\bm{m}_2 - \bm{m}_1)^T
+	\]
+	类内协方差矩阵
+	\[
+		S_w = \sum_{n\in \mathcal{C}_1} (\bm{x}_n - \bm{m}_1)(\bm{x}_n - \bm{m}_1)^T
+		+  \sum_{n\in \mathcal{C}_2} (\bm{x}_n - \bm{m}_2)(\bm{x}_n - \bm{m}_2)^T
+	\]
+	\item 感知机算法:
+		分类器
+		\[
+			h_{\theta}(x) = \text{sign}(\theta^Tx)
+		\]
+	    参数更新(SGD)
+	    \[
+		    \theta := \theta + \alpha(y^{(i)} - h_{\theta}(x^{(i)}))x^{(i)}
+	    \]
+
+
+\end{itemize}
+基于最小错误率和最小风险的贝叶斯决策
+\begin{itemize}
+	\item 最小错误率的情况: given   $P(w_1)$和$P(w_2)$, $P(x|w_1)$和$P(x|w_2)$, 求出后验概率 $P(w_1|x)$和$P(w_2|x)$,  基于最小错误率的决策, $P(w_1|x) > P(w_2|x)$ 则$x\in w_1$ .
+	\item 最小风险: $g_1(x) = \lambda_{11} P(w_1|x) + \lambda_{12} P(w_2|x)$, $g_2(x) = \lambda_{21} P(w_1|x) + \lambda_{12} P(w_2|x)$,  选择风险小的
+\end{itemize}
+\section{KL变换/PCA}
+given $N$个样本$\bm{x}_i$, 求其KL变换的步骤
+\begin{itemize}
+	\item 计算样本的均值$\bm{\mu}$, 所有样本减去均值. (中心平移到原点)
+	\item 计算协方差矩阵$R = \frac{1}{N} \sum_{i=1}^{N} \bm{x}_i\bm{x}_i^T$
+	\item 求协方差矩阵的特征向量和对应的特征值, 根据要求选择前面的特征向量(依据特征值大小排序),构成变换矩阵$U$
+	\item $U$与原始数据$\bm{x}$相乘即得到变换后的数据
+\end{itemize}
+\section{Supervised learning}
+\subsection{几个关系}
+ 给定一个训练集 $\{\bm{x}, \bm{t} \}$,
+  LMS可由最大化似然函数$p(\bm{t}|\bm{x},\bm{w},\beta)$导出,
+  \[ \begin{split} 
+	 p(\bm{t}|\bm{x},\bm{w},\beta) &= \prod_{n=1}^{N} \mathcal{N}(t_n|y(x_n, \bm{w}), \beta^{-1})  \\
+	 \ln p(\bm{t}|\bm{x},\bm{w},\beta) &= -\frac{\beta}{2}\sum_{n=1}^{N}\{y(x_n, \bm{w})	- t_n\}^2 + \frac{N}{2}\ln\beta - \frac{N}{2}\ln(2\pi)
+	 \end{split} 
+  \]
+ 正则化系数可以通过最大化后验概率得出
+ \[
+	 p(\bm{w}|\bm{x},\bm{t}) \propto p(\bm{t}|\bm{x},\bm{w}) p(\bm{w})
+ \]	
+设先验
+\[
+	p(\bm{w}) = \mathcal{N}(\bm{w}|0, \alpha^{-1}\bm{I} )
+	= \frac{1}{ (2\pi)^{D/2} } \frac{1}{|\alpha^{-1}\bm{I}|^{1/2} }\exp\{	-\frac{1}{2}\bm{w}^T(\alpha^{-1}\bm{I})^{-1}\bm{w}	\}
+\]	
+最大化$p(\bm{w}|\bm{x},\bm{t})$等价于
+\[
+	\text{maximize } -\frac{\beta}{2}\sum_{n=1}^{N}\{y(x_n, \bm{w})	- t_n\}^2 -\frac{\alpha}{2} \bm{w}^T\bm{w}
+\]
+因此 $\lambda = \alpha/\beta$.
+完全的贝叶斯观念是将$\bm{w}$视为一个随机变量, 在整个参数空间积分得到预测分布
+\[
+	p(t|x, \bm{x},\bm{t}) = \int p(\bm{w}|\bm{x},\bm{t}) p(t|x, \bm{w})\mathrm{d}\bm{w}
+\]
+\subsection{偏差方程的分解}
+定义几个符号:
+ 给定训练集$D$, 训练得到的预测函数$f_D(x)$, 最优估计$h(x)$.
+ \[
+	 \begin{split} 
+	 E_D(L) &= \int\int (f_D(x) - y)^2p(x,y)\mathrm{d}x \mathrm{d}y \\
+	 &= \int \int (	f_D(x) - h(x) + h(x) - y)^2 p(x,y)\mathrm{d}x\mathrm{d}y \\
+	 &= \int (f_D(x) - h(x))^2 p(x)\mathrm{d}x + \int\int (h(x) - y)^2p(x,y) \mathrm{d}x\mathrm{d}y \\
+	 &= \int(f_D(x) - E[f_D(x)] + E[f_D(x)] - h(x))^2 p(x)\mathrm{d}x 
+	 + \int\int (h(x) - y)^2p(x,y) \mathrm{d}x\mathrm{d}y \\
+	 &= \int (f_D(x) - E[f_D(x)])^2 p(x)\mathrm{d}x + 
+	 \int (E[f_D(x)] - h(x))^2 p(x)\mathrm{d}x + \int\int (h(x) - y)^2p(x,y) \mathrm{d}x\mathrm{d}y \\
+	 \end{split} 
+ \]
+ 上式中第一项为 variance, 第二项为$\text{bias}^2$, 第三项为noise.
+ 
+ \subsection{SVM }
+ 见单独的总结
+ \section{图模型}
+ 条件独立性的判断和证明.
+ 
+ \section{独立于算法的机器学习}
+ \subsection{some philosophy}
+ \begin{itemize}
+ 	\item No Free Lunch Theorem:
+ 	 不存在一个与具体应用无关的、普遍适用的“最有分类器/回归器”！仅在学习算法与问题匹配的情况下才(即在特定的实际问题或目标函数)才有所谓“更优”！
+ 	 \item Ugly Duckling Theorem:世界上不存在分类的客观标准，一切分类标准都是主观的。
+ 	 \item Occam’s Razor: 如无必要,勿增实体。在相互竞争的假设中,我们选择条件最少的假设。在模式识别领域,在拟合数据程度接近的情况下,我们更加偏向于选择简单的算法或者分类器。
+ \end{itemize}
+ \subsection{重采样技术}
+ \subsubsection{sampling}
+ Jackknife -- 刀切法, leave one out \\
+ Bootstrap -- 随机选取$n$个点, 重新给予权重.
+ \subsubsection{Bagging}
+ independently bootstrap data sets.
+ 给定一个数据集$D$, Bagging
+算法如下:
+\begin{itemize}
+	\item 独立地采样$m$ 个子集 $D_1,D_2, ..., D_m$
+	\item 每个子集上训练一个分类器$f_i$
+	\item 最后的分类器结果由所有的投票决定
+\end{itemize}
+ \subsubsection{Boosting}
+ dependently bootstrap data sets
+ 举个例子,
+ \begin{itemize}
+ 	\item $D_1$是随机地从原数据集$X$中选取的一个子集, 训练一个分类器$h_1$
+ 	\item $D_2$从剩余样本$X/D_1$中选取,使得一半被$h_1$正确分类,一半被$h_1$错误分类;
+ 	\item $D_3$从剩余样本$X/(D_1\cup D_2)$中选取,使得$h_1$和$h_2$判决结果不同,训练一个分类器$h_3$
+ 	\item 总的分类器
+ 	\[
+		 h(x) = h_1(x) , \text{if } h_1(x) = h_2(x); \text{ otherwise } h(x) = h_3(x)
+ 	\]
+ \end{itemize}
+ 
+ 
+ 
+ \subsubsection{AdaBoost} 
+ AdaBoost 基本思想:将弱分类器进行线性带权（权重可以理解为每个弱分类器对最终形成的强分类器的影响因袭） 组成形成强分类器。继续训练可以增加 Margin（可以理解为正确分类的置信度），而 Margin 的增加可以降低泛化误差。因此，会导致测试误差下降。 \\
+ AdaBoost 算法: \\
+ 给定$N$个样本的训练集$X = \{(\bm{x}_1, t_1), (\bm{x}_2,t_2), \cdots, (\bm{x}_N,t_N) \}$,$t_i \in \{+1, -1\}$.
+ \begin{enumerate}
+ 	\item 初始化样本的权重为$w_n^{(1)} = 1/N$, $n=1,2,\cdots,N$
+ 	\item for $m = 1,2,\cdots, M$:
+	 \begin{itemize}
+	 	\item 训练一个弱分类器$y_m(\bm{x})$,使其最小化带权重的误差函数
+	 	\[
+		 	J_m = \sum_{n=1}^{N} w_{n}^{(m)} I(	y_m(\bm{x}_n) \neq t_n)
+	 	\]
+	 	这里$I()$是指示函数, $y_m(\bm{x}_n) \neq t_n$为真$I = 1$否则 $I = 0$
+	 	\item 计算分类器的话语权
+	 	\[
+		 	\alpha_m = \ln{	\frac{1-\epsilon_m}{\epsilon_m}}
+	 	\]
+	 	这里$\epsilon_m$由下式给出
+	 	\[
+		 	\epsilon_m = \frac{J_m}{\sum_{n=1}^{N} w_n^{(m)}}
+	 	\]
+	 	\item 更新样本的权重
+	 	\[
+		 	w_n^{(m+1)} = w_n^{(m)} \exp\{ \alpha_m I(y_m(\bm{x}_n) \neq t_n)		\}
+	 	\]
+	 \end{itemize}	
+	 
+ 	\item  得到最后的分类器
+ 	\[
+	 	Y_M(\bm{x}) = \text{sign}(\sum_{m=1}^{M} \alpha_m y_m(\bm{x}))
+ 	\]
+ \end{enumerate}
+ 
+ 
+ 
+\section{EM算法}	
+\subsection{K means}
+\subsubsection{与GMM的差异}
+K-means 是GMM在协方差矩阵$\epsilon\bm{I}\rightarrow \bm{0}$的特例, K-means执行的是``hard assignment'',也就是在E step将每个样本粗暴地赋予到距离最近的那个类别,而GMM执行的是``soft assignment'', 对一个样本而言,赋予其属于某个类别的概率. 
+\subsubsection{算法}
+easy... 判断收敛的条件是中心不再移动
+	
+\subsection{GMM}
+GMM模型
+\[
+	p(\bm{x}) = \sum_{k=1}^{K} \pi_k \mathcal{N}(\bm{x}| \bm{\mu}_k, \bm{\Sigma}_k), \sum_{k} \pi_k = 1, 0 \leq \pi_k \leq 1
+\] 	
+对数似然函数
+\begin{equation}
+	\label{form1} 
+	\ln p(\bm{X}|\bm{\pi}, \bm{\mu}, \bm{\Sigma}) = \sum_{n=1}^{N} \ln 
+	\left\{
+		\sum_{k=1}^{K} \pi_k \mathcal{N}(\bm{x}_n| \bm{\mu}_k,\bm{\Sigma}_k)	
+	\right\}
+\end{equation}
+无法求得解析解, 可以用梯度法进行数值优化, 这里采用EM算法进行最大化似然函数. \\
+引入隐变量(a latent variable)$\bm{z}$,  $\bm{z}$满足 $z_k \in \{0,1\}, \sum_{k} z_k = 1$ 
+\[
+	p(z_k = 1) = \pi_k
+\]
+\[
+	p(\bm{x}|z_k = 1) = \mathcal{N}(\bm{x}|\bm{\mu}_k, \bm{\Sigma}_k)
+\]
+给定一个样本 $\bm{x}$, $\bm{x}$ 属于第$k$类的概率,也称为``responsibility''
+\[
+	\begin{split} 
+	\mathcal{\gamma}(z_k) \equiv p(z_k = 1|\bm{x}) &= \frac{ p(z_k=1) p(\bm{x}|z_k=1)}{\sum_{j=1}^{K}p(z_j=1)p(\bm{x}|z_j = 1)	}  \\
+	&= \frac{\pi_k  \mathcal{N}(\bm{x}|\bm{\mu}_k, \bm{\Sigma}_k)}{\sum_{j=1}^{K}\pi_j \mathcal{N}(\bm{x}|\bm{\mu}_j, \bm{\Sigma}_j)	}
+	\end{split} 
+\]
+令似然函数对$\bm{\mu}_k$求偏导等于0得
+\[
+	\begin{split} 
+	0 &= \sum_{n=1}^{N} \frac{\pi_k \mathcal{N}(\bm{x}_n|\bm{\mu}_k, \bm{\Sigma}_k)}{\sum_{j=1}^{K} \pi_j \mathcal{N}(\bm{x}_n|\bm{\mu}_j, \bm{\Sigma}_j)} \bm{\Sigma}_k^{-1}(\bm{x}_n - \bm{\mu}_k) \\
+	&= \sum_{n=1}^{N} \mathcal{\gamma}(z_{nk}) \bm{\Sigma}^{-1}(\bm{x}_n - \bm{\mu}_k)	
+	\end{split} 
+\]
+因此
+\[
+	\bm{\mu}_k = \frac{1}{N_k} \sum_{n=1}^{N} \mathcal{\gamma}(z_{nk})\bm{x}_n, 
+	N_k = \sum_{n=1}^{N} \mathcal{\gamma}(z_{nk}) 
+\]
+对$\bm{\Sigma}_k$求偏导数等于0得
+\[
+	\bm{\Sigma}_k = \frac{1}{N_k} \sum_{n=1}^{N} \mathcal{\gamma}(z_{nk}) (\bm{x}_n - \bm{\mu}_k)
+	(\bm{x}_n - \bm{\mu}_k)^T
+\]	
+类似可以推出
+\[
+	\pi_k = \frac{N_k}{N}
+\]
+所以GMM条件下的EM算法如下:
+\begin{enumerate}
+	\item 初始化参数$\bm{\mu}_k$, $\bm{\Sigma}_k$, $\pi_k$
+	\item \textbf{E step} 用当前参数更新 responsibility $\mathcal{\gamma}(z_{nk})$
+	\item \textbf{M step} 用当前responsibility更新$\bm{\mu}_k$, $\bm{\Sigma}_k$, $\bm{\pi}_k$
+	\item 判断算法是否收敛, 否则返回步骤2
+\end{enumerate}
+	
+	
+	
+	
+	
+	
+	
+	
+\end{document}
